@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LOGIX — Puzzle di Logica</title>
+<meta name="description" content="70 puzzle di logica su 5 livelli. Gratis, nessuna app da installare."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#07080e;--s1:#0e0f1a;--s2:#151626;--s3:#1c1d30;
+  --text:#dce0f0;--muted:#454870;--border:#1e2035;
+  --c1:#64ffda;--c2:#00e5ff;--c3:#ffd700;--c4:#ff9500;--c5:#ff3cac;
+  --green:#00ff88;--red:#ff4455;
+}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;}
+#root{min-height:100vh;}
+.app{
+  min-height:100vh;
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 10% 0%,rgba(100,255,218,.05) 0%,transparent 50%),
+    radial-gradient(ellipse 60% 40% at 90% 100%,rgba(255,60,172,.05) 0%,transparent 50%);
+  display:flex;flex-direction:column;align-items:center;
+  padding:20px 14px 50px;gap:16px;
+}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:2.2rem;letter-spacing:-.03em;
+  background:linear-gradient(120deg,var(--c2),var(--c5));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;}
+.tagline{font-size:.55rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;text-align:center;margin-top:2px;}
+.global-progress{width:100%;max-width:520px;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:12px 16px;}
+.gp-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.gp-label{font-size:.58rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;}
+.gp-val{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--c2);}
+.gp-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.gp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--c2),var(--c5));transition:width .5s ease;}
+.gp-levels{display:flex;gap:6px;margin-top:10px;}
+.gp-dot{flex:1;height:5px;border-radius:3px;transition:all .3s;}
+.gp-dot.done{opacity:1;}
+.gp-dot.active{animation:pulse 1.5s infinite;}
+.gp-dot.locked{opacity:.2;filter:grayscale(1);}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1;}}
+.level-grid{display:flex;flex-direction:column;gap:10px;width:100%;max-width:520px;}
+.level-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:14px 16px;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.level-card:hover:not(.locked-card){transform:translateX(4px);}
+.level-card.locked-card{opacity:.45;cursor:not-allowed;}
+.lc-icon{font-size:1.6rem;min-width:36px;text-align:center;}
+.lc-info{flex:1;}
+.lc-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;}
+.lc-desc{font-size:.62rem;color:var(--muted);margin-top:3px;}
+.lc-meta{display:flex;gap:10px;margin-top:6px;}
+.lc-tag{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid;}
+.lc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.lc-score{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;}
+.lock-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:1.2rem;opacity:.5;}
+.stats{display:flex;gap:0;background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;width:100%;max-width:520px;}
+.stat{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px;border-right:1px solid var(--border);}
+.stat:last-child{border-right:none;}
+.sv{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--c2);}
+.sl{font-size:.5rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-top:1px;}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:18px;
+  padding:20px;width:100%;max-width:520px;position:relative;overflow:hidden;
+  animation:cardIn .3s ease;}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.card-top-bar{position:absolute;top:0;left:0;right:0;height:2px;}
+.tbar{height:3px;background:var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden;}
+.tfill{height:100%;border-radius:2px;transition:width 1s linear,background .5s;}
+.pmeta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:4px;}
+.badge{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid;}
+.pcat{font-size:.55rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;}
+.pnum{font-size:.55rem;color:var(--muted);}
+.q{font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;line-height:1.7;
+  white-space:pre-wrap;margin-bottom:16px;min-height:56px;}
+.hint-box{background:var(--s2);border-left:3px solid var(--c3);border-radius:0 8px 8px 0;
+  padding:9px 12px;font-size:.72rem;color:#c0c020;margin-bottom:12px;animation:fi .3s ease;}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.opt{background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.74rem;
+  padding:12px 9px;cursor:pointer;transition:all .15s;text-align:left;line-height:1.45;}
+.opt:hover:not(:disabled){border-color:var(--c2);color:var(--c2);background:rgba(0,229,255,.05);transform:translateY(-1px);}
+.opt.ok{background:rgba(0,255,136,.1);border-color:var(--green);color:var(--green);}
+.opt.ko{background:rgba(255,68,85,.1);border-color:var(--red);color:var(--red);}
+.opt:disabled{cursor:default;}
+.let{opacity:.35;font-size:.58rem;margin-right:4px;}
+.expl{background:var(--s2);border-left:3px solid var(--c2);border-radius:0 8px 8px 0;
+  padding:10px 12px;font-size:.72rem;color:#8ab0c8;line-height:1.65;margin-bottom:12px;animation:fi .3s ease;}
+.expl b{color:var(--c2);}
+.acts{display:flex;gap:8px;}
+.btn{flex:1;padding:10px;border-radius:10px;font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;letter-spacing:.05em;cursor:pointer;border:1px solid;transition:all .15s;font-weight:600;}
+.btn-p{background:linear-gradient(135deg,var(--c2),#006688);border-color:var(--c2);color:#000;}
+.btn-p:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-g{background:transparent;border-color:var(--border);color:var(--muted);}
+.btn-g:hover{border-color:var(--c3);color:var(--c3);}
+.btn:disabled{opacity:.3;cursor:default;transform:none;filter:none;}
+.pdots{display:flex;gap:4px;width:100%;max-width:520px;flex-wrap:wrap;justify-content:center;}
+.pdot{width:9px;height:9px;border-radius:50%;border:1px solid var(--border);transition:all .3s;}
+.pdot.ok{background:var(--green);border-color:var(--green);}
+.pdot.ko{background:var(--red);border-color:var(--red);}
+.pdot.cur{border-color:var(--c2);box-shadow:0 0 5px var(--c2);}
+.combo-fx{position:fixed;top:42%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;
+  color:var(--c3);text-shadow:0 0 20px var(--c3);pointer-events:none;
+  animation:comboAnim 1s forwards;z-index:999;}
+@keyframes comboAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  60%{opacity:1;transform:translate(-50%,-65%) scale(1.2)}
+  100%{opacity:0;transform:translate(-50%,-80%) scale(.9)}}
+.lend{text-align:center;padding:20px 8px;}
+.lend-icon{font-size:3rem;margin-bottom:12px;}
+.lend-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;margin-bottom:6px;}
+.lend-sub{font-size:.72rem;color:var(--muted);margin-bottom:6px;}
+.lend-score{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:16px;}
+.stars-row{font-size:1.8rem;letter-spacing:4px;margin-bottom:16px;}
+.lend-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+.lend-stat{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;}
+.lsv{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;}
+.lsl{font-size:.52rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-top:2px;}
+.lend-acts{display:flex;gap:8px;flex-wrap:wrap;}
+.fade{animation:fi .4s ease;}
+.unlock-banner{background:rgba(0,255,136,.08);border:1px solid var(--green);border-radius:10px;padding:8px 12px;font-size:.68rem;color:var(--green);margin-bottom:14px;}
+.total-score{font-size:.7rem;color:var(--c3);font-family:'Syne',sans-serif;font-weight:700;}
+.section-label{font-size:.6rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;}
+.top-row{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:520px;}
+.footer{font-size:.52rem;color:var(--muted);letter-spacing:.1em;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const { useState, useEffect, useRef } = React;
+
+const ALL_PUZZLES = [
+  {id:1,level:1,category:"Sequenze",q:"Completa la sequenza:\n2 · 4 · 6 · 8 · ?",opts:["9","10","11","12"],a:1,hint:"Ogni numero aumenta di una quantità fissa.",expl:"Si aggiunge 2 ogni volta: 8+2=10."},
+  {id:2,level:1,category:"Sequenze",q:"Completa la sequenza:\n1 · 3 · 5 · 7 · ?",opts:["8","9","10","11"],a:1,hint:"Sono tutti numeri dispari.",expl:"Numeri dispari consecutivi: dopo 7 viene 9."},
+  {id:3,level:1,category:"Logica",q:"Marco ha 3 mele. Ne mangia 1 e ne compra 2.\nQuante mele ha ora?",opts:["2","3","4","5"],a:2,hint:"Sottrai prima, poi aggiungi.",expl:"3 - 1 + 2 = 4 mele."},
+  {id:4,level:1,category:"Lettere",q:"Qual è la lettera successiva?\nA · B · C · D · ?",opts:["E","F","G","H"],a:0,hint:"Alfabeto in ordine.",expl:"Sequenza alfabetica: dopo D viene E."},
+  {id:5,level:1,category:"Analogie",q:"Cane sta a abbaiare come gatto sta a…?",opts:["correre","miagolare","saltare","dormire"],a:1,hint:"Pensa al verso dell'animale.",expl:"Il gatto miagola, come il cane abbaia."},
+  {id:6,level:1,category:"Geometria",q:"Un quadrato ha 4 lati uguali. Quanti angoli ha?",opts:["2","3","4","5"],a:2,hint:"Conta gli angoli di un quadrato.",expl:"Un quadrato ha 4 angoli retti."},
+  {id:7,level:1,category:"Logica",q:"Se oggi è lunedì, che giorno sarà dopodomani?",opts:["Martedì","Mercoledì","Giovedì","Venerdì"],a:1,hint:"Conta due giorni in avanti.",expl:"Lunedì + 2 = Mercoledì."},
+  {id:8,level:1,category:"Numeri",q:"Quale numero è uguale a metà di 20 più 3?",opts:["8","10","13","12"],a:2,hint:"Prima calcola metà di 20, poi aggiungi.",expl:"20÷2=10, 10+3=13."},
+  {id:9,level:1,category:"Analogie",q:"Sole sta a giorno come Luna sta a…?",opts:["alba","notte","tramonto","stella"],a:1,hint:"Pensa al momento della giornata associato.",expl:"Il sole illumina il giorno, la luna la notte."},
+  {id:10,level:1,category:"Sequenze",q:"Completa:\n10 · 20 · 30 · 40 · ?",opts:["45","48","50","55"],a:2,hint:"Incremento costante di 10.",expl:"Si aggiunge 10 ogni volta: 40+10=50."},
+  {id:11,level:1,category:"Logica",q:"Una bottiglia piena pesa 500g. Vuota pesa 200g.\nQuanto pesa il liquido?",opts:["100g","200g","300g","400g"],a:2,hint:"Sottrai il peso della bottiglia vuota.",expl:"500 - 200 = 300g."},
+  {id:12,level:1,category:"Lettere",q:"Qual è la lettera che manca?\nZ · Y · X · W · ?",opts:["U","V","T","S"],a:1,hint:"Alfabeto al contrario.",expl:"Sequenza decrescente: dopo W viene V."},
+  {id:13,level:1,category:"Geometria",q:"Quante facce ha un cubo?",opts:["4","5","6","8"],a:2,hint:"Pensa alle facce di una scatola.",expl:"Un cubo ha 6 facce quadrate."},
+  {id:14,level:1,category:"Numeri",q:"Qual è il doppio del doppio di 5?",opts:["10","15","20","25"],a:2,hint:"Calcola un passo alla volta.",expl:"Doppio di 5 = 10. Doppio di 10 = 20."},
+  {id:15,level:2,category:"Sequenze",q:"Trova il numero mancante:\n1 · 2 · 4 · 8 · 16 · ?",opts:["24","28","32","36"],a:2,hint:"Osserva il rapporto tra numeri consecutivi.",expl:"Ogni numero è moltiplicato per 2: 16×2=32."},
+  {id:16,level:2,category:"Deduzione",q:"Tutte le rose sono fiori.\nAlcuni fiori appassiscono presto.\nQuindi…?",opts:["Tutte le rose appassiscono presto","Alcune rose potrebbero appassire presto","Nessuna rosa appassisce","Le rose non sono fiori"],a:1,hint:"Non si può generalizzare da 'alcuni' a 'tutti'.",expl:"Solo alcune rose potrebbero appassire, non tutte necessariamente."},
+  {id:17,level:2,category:"Aritmetica",q:"Un treno parte alle 09:15 e impiega 1h 40min.\nA che ora arriva?",opts:["10:45","10:55","11:00","10:50"],a:1,hint:"Somma ore e minuti separatamente.",expl:"9:15 + 1h = 10:15 + 40min = 10:55."},
+  {id:18,level:2,category:"Pattern",q:"Qual è il prossimo nella serie?\n△ ○ △△ ○○ △△△ ?",opts:["○","○○○","△△△△","○○"],a:1,hint:"Conta le figure in ogni elemento.",expl:"Alternano triangoli e cerchi aumentando di 1: dopo △△△ viene ○○○."},
+  {id:19,level:2,category:"Logica",q:"Luca è più vecchio di Anna.\nAnna è più giovane di Marco.\nMarco ha 30 anni, Anna 25, Luca 28.\nChi è il più giovane?",opts:["Luca","Anna","Marco","Non si può sapere"],a:1,hint:"Confronta le età date.",expl:"Anna ha 25 anni, è la più giovane."},
+  {id:20,level:2,category:"Lettere",q:"Completa la serie:\nA · C · E · G · ?",opts:["H","I","J","K"],a:1,hint:"Conta le posizioni saltate nell'alfabeto.",expl:"Si saltano le lettere pari: A(1)C(3)E(5)G(7)I(9)."},
+  {id:21,level:2,category:"Spaziale",q:"Ho un foglio quadrato. Lo piego a metà.\nPoi ancora a metà. Quanti strati ho?",opts:["2","3","4","8"],a:2,hint:"Ogni piega raddoppia gli strati.",expl:"1 foglio → dopo 1 piega: 2 strati → dopo 2 pieghe: 4 strati."},
+  {id:22,level:2,category:"Numeri",q:"Quale percentuale è 15 di 60?",opts:["15%","20%","25%","30%"],a:2,hint:"Usa la formula: (parte÷totale)×100.",expl:"(15÷60)×100 = 0.25×100 = 25%."},
+  {id:23,level:2,category:"Analogie",q:"Pittore sta a pennello come scultore sta a…?",opts:["colore","tela","scalpello","argilla"],a:2,hint:"Qual è lo strumento principale dello scultore?",expl:"Il pittore usa il pennello, lo scultore usa lo scalpello."},
+  {id:24,level:2,category:"Sequenze",q:"Trova il numero mancante:\n3 · 6 · 12 · 24 · ?",opts:["36","42","48","30"],a:2,hint:"Osserva il moltiplicatore.",expl:"Ogni numero è moltiplicato per 2: 24×2=48."},
+  {id:25,level:2,category:"Logica",q:"In una scatola ci sono palline rosse e blu in rapporto 2:3.\nSe ci sono 10 palline rosse, quante sono in totale?",opts:["15","20","25","30"],a:2,hint:"Trova prima le blu, poi somma.",expl:"2:3 → 10 rosse → 15 blu → totale = 25."},
+  {id:26,level:2,category:"Aritmetica",q:"Un articolo costa €80 con sconto del 25%.\nQuanto si paga?",opts:["€55","€60","€65","€70"],a:1,hint:"Calcola il 25% e sottrailo.",expl:"25% di 80 = 20 → 80-20 = €60."},
+  {id:27,level:2,category:"Sequenze",q:"Completa:\n1 · 4 · 9 · 16 · 25 · ?",opts:["30","34","36","38"],a:2,hint:"Pensa ai quadrati dei numeri interi.",expl:"Sono i quadrati perfetti: 1²,2²,3²,4²,5²,6²=36."},
+  {id:28,level:2,category:"Deduzione",q:"Se piove, il suolo si bagna.\nIl suolo è asciutto.\nQuindi…?",opts:["Sta piovendo","Non sta piovendo","Potrebbe piovere","Non si può sapere"],a:1,hint:"Ragionamento per contrapposizione.",expl:"Se piove→bagnato. Asciutto→non piove. Logica per contrapposizione."},
+  {id:29,level:3,category:"Pattern",q:"Trova il numero mancante:\n3 · 7 · 13 · 21 · 31 · ?",opts:["41","43","45","39"],a:1,hint:"Guarda le differenze tra termini consecutivi.",expl:"Differenze: +4,+6,+8,+10,+12 → 31+12=43."},
+  {id:30,level:3,category:"Codici",q:"Se CANE=3154 e SOLE=4231,\nqual è il codice di LENA?",opts:["2514","2541","5214","2154"],a:0,hint:"Associa ogni lettera al suo numero e ricostruisci.",expl:"L=2,E=5,N=1,A=4 → LENA=2514."},
+  {id:31,level:3,category:"Deduzione",q:"Cinque persone siedono in fila.\nPaolo è a sinistra di Carla.\nCarla è a destra di Mia.\nMia è in posizione 2.\nIn che posizione è Paolo?",opts:["1","3","4","5"],a:1,hint:"Posiziona Mia per prima, poi gli altri.",expl:"Mia=2, Carla è alla sua destra (pos 3), Paolo a sinistra di Carla → Paolo=3 è la posizione minima valida."},
+  {id:32,level:3,category:"Aritmetica",q:"Uno sconto del 20% seguito da uno sconto del 10%.\nQual è lo sconto totale effettivo?",opts:["30%","28%","25%","27%"],a:1,hint:"Non sommare le percentuali: applicale in cascata.",expl:"100×0.8×0.9=72 → sconto=28%."},
+  {id:33,level:3,category:"Sequenze",q:"Qual è la prossima coppia?\n(1,2) · (3,9) · (5,25) · (7,49) · ?",opts:["(8,64)","(9,81)","(10,100)","(11,121)"],a:1,hint:"Osserva la relazione tra i due numeri di ogni coppia.",expl:"x è dispari, y=x². Dopo 7 viene 9: (9,81)."},
+  {id:34,level:3,category:"Spaziale",q:"Un cubo tagliato in 27 cubetti (3×3×3).\nQuanti cubetti hanno esattamente 2 facce esterne?",opts:["8","12","6","24"],a:1,hint:"Pensa agli spigoli del cubo originale.",expl:"I cubetti sugli spigoli (non angoli) hanno 2 facce esterne: 12 spigoli × 1 cubetto = 12."},
+  {id:35,level:3,category:"Logica",q:"Il barbiere rade tutti e soli coloro che non si radono da soli.\nChi rade il barbiere?",opts:["Se stesso","Un altro barbiere","Nessuno può radere il barbiere","È una donna"],a:2,hint:"Paradosso di Russell.",expl:"Paradosso di Russell: se si rade, non dovrebbe; se non si rade, deve. Contraddizione irrisolvibile."},
+  {id:36,level:3,category:"Numeri",q:"Quanti zeri ha il prodotto 1×2×3×…×20?",opts:["2","3","4","5"],a:2,hint:"Conta le coppie di 2 e 5 nel prodotto.",expl:"Ci sono 4 multipli di 5 fino a 20 → 4 zeri."},
+  {id:37,level:3,category:"Codici",q:"In un codice segreto: MARE→NDSF, SALE→TBMF.\nCome si codifica MELA?",opts:["NFMB","NFMC","OFMB","NFNB"],a:0,hint:"Confronta ogni lettera con la sua versione codificata.",expl:"Ogni lettera è spostata di +1: M→N, E→F, L→M, A→B → NFMB."},
+  {id:38,level:3,category:"Probabilità",q:"Lanci un dado equo 2 volte.\nQual è la probabilità che la somma sia 7?",opts:["1/6","5/36","6/36","1/4"],a:2,hint:"Conta le combinazioni che danno somma 7.",expl:"(1,6)(2,5)(3,4)(4,3)(5,2)(6,1) = 6 su 36 = 6/36."},
+  {id:39,level:3,category:"Deduzione",q:"Anna non è medico né avvocato.\nBo non è avvocato.\nCy non è ingegnere.\nChi è il medico?",opts:["Anna","Bo","Cy","Non determinabile"],a:1,hint:"Usa una tabella di eliminazione.",expl:"Anna=ingegnere (non med, non avv). Bo=medico (non avv). Cy=avvocato."},
+  {id:40,level:3,category:"Pattern",q:"Qual è il valore di ? nella griglia?\n2  3  5\n4  9  25\n6  27  ?",opts:["36","64","125","216"],a:2,hint:"Guarda i pattern per colonna.",expl:"Col1: ×2. Col2: potenze di 3. Col3: potenze di 5 → 5³=125."},
+  {id:41,level:3,category:"Aritmetica",q:"Vasca: rubinetto A la riempie in 6h, B in 12h.\nQuante ore con entrambi aperti?",opts:["3h","4h","5h","9h"],a:1,hint:"Somma le velocità di riempimento.",expl:"1/6+1/12=3/12=1/4 per ora → 4 ore."},
+  {id:42,level:3,category:"Lettere",q:"Le consonanti di SEGRETO sono S,G,R,T.\nQual è la sequenza corretta in ordine alfabetico?",opts:["GRST","SGTR","SGRT","RGST"],a:0,hint:"Ordina S,G,R,T alfabeticamente.",expl:"G(7),R(18),S(19),T(20) → GRST."},
+  {id:43,level:4,category:"Deduzione",q:"X dice il vero, Y mente sempre, Z alterna.\nX: «Y mente». Y: «Z alterna». Z: «X dice il vero».\nChi è Z?",opts:["Veritiero","Bugiardo","Chi alterna","Non determinabile"],a:2,hint:"Inizia da X che dice il vero.",expl:"X vero → Y mente davvero. Y bugiardo → Z alterna è falso, ma Z dice cosa vera → Z alterna (affermazione vera del ciclo)."},
+  {id:44,level:4,category:"Combinatoria",q:"In quanti modi si possono disporre 4 libri su uno scaffale?",opts:["16","20","24","32"],a:2,hint:"Usa il fattoriale.",expl:"4! = 4×3×2×1 = 24 modi."},
+  {id:45,level:4,category:"Pattern",q:"Trova il prossimo:\n1 · 1 · 2 · 3 · 5 · 8 · 13 · ?",opts:["18","20","21","22"],a:2,hint:"Ogni termine è la somma dei due precedenti.",expl:"Sequenza di Fibonacci: 8+13=21."},
+  {id:46,level:4,category:"Spaziale",q:"Ore 3:30 su un orologio analogico.\nQuanti gradi forma l'angolo tra le lancette?",opts:["75°","80°","90°","105°"],a:0,hint:"La lancetta delle ore si muove anche durante i minuti.",expl:"Lancetta min=180°. Lancetta ore=90°+(30×0.5°)=105°. Angolo=|180-105|=75°."},
+  {id:47,level:4,category:"Logica",q:"5 case in fila. Inglese→casa rossa. Verde a sinistra del bianco.\nNorvegese→casa 1. Vicino del norvegese→ha un cavallo.\nDi che colore è la casa 2?",opts:["Rossa","Verde","Bianca","Blu"],a:3,hint:"Posiziona il norvegese e usa le adiacenze.",expl:"Norvegese=1, vicino(2) ha cavallo. Verde-bianco non in pos 1-2. Casa 2=blu per eliminazione."},
+  {id:48,level:4,category:"Numeri",q:"Quanti pesi interi (potenze di 3) servono per pesare qualsiasi peso da 1 a 40 kg su una bilancia a due piatti?",opts:["4","5","6","7"],a:0,hint:"Usa potenze di 3: 1,3,9,27.",expl:"Con 1,3,9,27 si bilanciano tutti i pesi da 1 a 40. Bastano 4 pesi."},
+  {id:49,level:4,category:"Probabilità",q:"Sacchetto: 4 rosse e 6 blu. Estrai 2 senza rimettere.\nProb. che siano entrambe rosse?",opts:["2/15","1/10","4/25","3/15"],a:0,hint:"Probabilità condizionata.",expl:"(4/10)×(3/9)=12/90=2/15."},
+  {id:50,level:4,category:"Codici",q:"Messaggio cifrato Cesare +3: FROR.\nQual è il testo originale?",opts:["CALO","COLO","COIN","SOLO"],a:1,hint:"Sposta ogni lettera di -3 nell'alfabeto.",expl:"F-3=C, R-3=O, O-3=L, R-3=O → COLO."},
+  {id:51,level:4,category:"Sequenze",q:"Quale numero manca?\n2 · 6 · 12 · 20 · 30 · ?",opts:["36","40","42","44"],a:2,hint:"Guarda le differenze o la formula n(n+1).",expl:"Diff: +4,+6,+8,+10,+12 → 30+12=42. Oppure: 6×7=42."},
+  {id:52,level:4,category:"Deduzione",q:"Regola: 'Vocale davanti → numero pari dietro'.\nCarte: A, K, 4, 7. Quali giri per verificare?",opts:["Solo A","A e 4","A e 7","Tutte e 4"],a:2,hint:"Quale carta può falsificare la regola?",expl:"Giri A (controlla il retro pari) e 7 (se dietro c'è vocale, la regola è violata)."},
+  {id:53,level:4,category:"Aritmetica",q:"Un orologio ritarda 2 minuti ogni ora.\nRegolato a 12:00, dopo quante ore mostrerà di nuovo le 12:00?",opts:["Dopo 30 giorni","Dopo 360 ore","Dopo 720 ore","Mai esattamente"],a:1,hint:"Calcola quante ore per perdere 12 ore.",expl:"Perde 2min/ora → per perdere 720min (12h): 720÷2=360 ore."},
+  {id:54,level:4,category:"Pattern",q:"Serie: 0 · 1 · 1 · 2 · 4 · 7 · 13 · ?\n(ogni termine = somma dei 3 precedenti)",opts:["20","24","25","26"],a:1,hint:"Somma i 3 termini precedenti.",expl:"4+7+13=24."},
+  {id:55,level:4,category:"Combinatoria",q:"Quanti comitati di 3 persone si formano da un gruppo di 6?",opts:["18","20","24","30"],a:1,hint:"Usa le combinazioni C(6,3).",expl:"C(6,3)=6!/(3!×3!)=720/36=20."},
+  {id:56,level:4,category:"Logica",q:"Contadino, volpe, gallina, grano. Barca porta solo 1 elemento.\nVolpe mangia gallina, gallina mangia grano.\nMinimo traversate necessarie?",opts:["5","7","9","11"],a:1,hint:"La gallina non può stare sola con volpe o grano.",expl:"Soluzione classica: 7 traversate."},
+  {id:57,level:5,category:"Logica",q:"100 prigionieri, ognuno cerca il proprio numero tra 100 scatole (max 50 aperture).\nQuale strategia massimizza la probabilità collettiva?",opts:["Aprire casualmente","Seguire i cicli: apri la tua scatola, poi segui i numeri trovati","Dividersi le scatole","Comunicare prima"],a:1,hint:"La strategia dei cicli permette >30% di successo collettivo.",expl:"Strategia dei cicli: P≈31%. Senza strategia: P≈(1/2)^100 ≈ 0."},
+  {id:58,level:5,category:"Numeri",q:"Quanti interi da 1 a 1000 sono divisibili per 2 oppure per 5?",opts:["500","600","650","700"],a:1,hint:"Usa inclusione-esclusione: |A∪B|=|A|+|B|-|A∩B|.",expl:"|div2|=500, |div5|=200, |div10|=100 → 500+200-100=600."},
+  {id:59,level:5,category:"Pattern",q:"Completa la serie:\n1 · 2 · 6 · 24 · 120 · ?",opts:["240","480","720","600"],a:2,hint:"Ogni termine ha una relazione fattoriale.",expl:"1!,2!,3!,4!,5!,6! → 6!=720."},
+  {id:60,level:5,category:"Geometria",q:"Triangolo equilatero con lato 6.\nQual è la sua area?",opts:["9√3","12√3","9√2","18"],a:0,hint:"Formula: (√3/4)×l².",expl:"(√3/4)×36=9√3≈15.6."},
+  {id:61,level:5,category:"Deduzione",q:"4 cavalieri (2 veritieri, 2 bugiardi).\nA: «B mente». B: «C e D mentono entrambi». C: «A dice il vero».\nChi dice il vero?",opts:["A e C","B e D","A e B","C e D"],a:0,hint:"Supponi chi è veritiero e verifica.",expl:"A=vero → B mente. B mente → 'C e D mentono' è falso → C è veritiero. A e C sono i due veritieri."},
+  {id:62,level:5,category:"Combinatoria",q:"In quanti modi distribuire 5 oggetti identici in 3 scatole distinte?",opts:["10","15","21","35"],a:2,hint:"Formula stelle e barre: C(n+k-1, k-1).",expl:"C(7,2)=21."},
+  {id:63,level:5,category:"Probabilità",q:"Monty Hall: 3 porte, 1 premio. Scegli la porta 1.\nIl conduttore apre la porta 3 (vuota). Conviene cambiare?",opts:["No, 1/2 in entrambi i casi","No, la tua scelta iniziale è migliore","Sì, cambiando vinci 2/3 delle volte","Sì, cambiando vinci 3/4 delle volte"],a:2,hint:"Le probabilità non si redistribuiscono uniformemente.",expl:"Monty Hall: cambiando vinci 2/3 delle volte. Restando: 1/3."},
+  {id:64,level:5,category:"Sequenze",q:"Qual è il prossimo numero?\n2 · 3 · 5 · 7 · 11 · 13 · ?",opts:["15","17","19","21"],a:1,hint:"Sequenza famosa in matematica.",expl:"Numeri primi: dopo 13 viene 17."},
+  {id:65,level:5,category:"Logica",q:"Isola di cavalieri (vero) e furfanti (falso).\nA dice: «Almeno uno di noi è un furfante».\nChi sono A e B?",opts:["Entrambi cavalieri","Entrambi furfanti","A cavaliere, B furfante","A furfante, B cavaliere"],a:2,hint:"Se A fosse furfante, cosa implicherebbe?",expl:"A=furfante → affermazione vera: contraddizione. A=cavaliere, dice vero → B è furfante."},
+  {id:66,level:5,category:"Numeri",q:"Qual è la somma dei primi 100 numeri interi positivi?",opts:["4950","5000","5050","5100"],a:2,hint:"Formula di Gauss: n(n+1)/2.",expl:"100×101÷2=5050."},
+  {id:67,level:5,category:"Pattern",q:"Griglia 4×4 (ogni riga/colonna contiene 1-4 una volta).\nRiga1: 1,?,3,4. Colonna2 contiene già 1 (riga2).\nQual è il numero mancante in riga1 pos2?",opts:["1","2","3","4"],a:1,hint:"Riga1 ha 1,_,3,4. Quale numero manca?",expl:"Riga1 ha 1,_,3,4 → manca il 2."},
+  {id:68,level:5,category:"Deduzione",q:"Paradosso del mucchio: 1 chicco non è un mucchio.\nAggiungere 1 a un non-mucchio non crea un mucchio.\nQuindi 1 milione di chicchi…?",opts:["Non è un mucchio","È un mucchio","Il concetto è vago per definizione","Dipende dalla cultura"],a:2,hint:"Paradosso sorite.",expl:"Il paradosso sorite mostra che 'mucchio' è un predicato vago: la logica binaria classica non è adeguata."},
+  {id:69,level:5,category:"Combinatoria",q:"Quante parole di 3 lettere si formano con A,B,C,D,E senza ripetizioni?",opts:["10","30","60","120"],a:2,hint:"Permutazioni P(5,3).",expl:"P(5,3)=5×4×3=60."},
+  {id:70,level:5,category:"Logica",q:"Esiste un enunciato vero ma non dimostrabile?\n(Teorema di incompletezza di Gödel, 1931)",opts:["No, ogni verità è dimostrabile","Sì, in ogni sistema formale sufficientemente potente e coerente","Solo nei sistemi inconsistenti","Dipende dalla logica usata"],a:1,hint:"Primo teorema di incompletezza di Gödel.",expl:"Gödel (1931): in ogni sistema formale coerente e sufficientemente espressivo esistono enunciati veri ma non dimostrabili nel sistema."},
+];
+
+const LEVELS_CFG = [
+  {id:1,name:"Principiante",color:"#64ffda",icon:"🌱",time:90,pts:8,desc:"Concetti base e logica semplice"},
+  {id:2,name:"Facile",color:"#00e5ff",icon:"⚡",time:70,pts:15,desc:"Sequenze e deduzioni"},
+  {id:3,name:"Medio",color:"#ffd700",icon:"🔥",time:50,pts:25,desc:"Pattern complessi e codici"},
+  {id:4,name:"Difficile",color:"#ff9500",icon:"💎",time:35,pts:40,desc:"Logica avanzata e combinatoria"},
+  {id:5,name:"Esperto",color:"#ff3cac",icon:"🏆",time:25,pts:60,desc:"Paradossi e matematica profonda"},
+];
+
+const PER_LEVEL = 10;
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function stars(c,t){const p=c/t;return p===1?3:p>=.7?2:p>=.4?1:0;}
+
+function App(){
+  const [screen,setScreen]=useState("home");
+  const [prog,setProg]=useState({1:{unlocked:true,stars:0,best:0},2:{unlocked:false,stars:0,best:0},3:{unlocked:false,stars:0,best:0},4:{unlocked:false,stars:0,best:0},5:{unlocked:false,stars:0,best:0}});
+  const [totalScore,setTotalScore]=useState(0);
+  const [curLevel,setCurLevel]=useState(null);
+  const [queue,setQueue]=useState([]);
+  const [idx,setIdx]=useState(0);
+  const [sel,setSel]=useState(null);
+  const [showHint,setShowHint]=useState(false);
+  const [hintUsed,setHintUsed]=useState(false);
+  const [score,setScore]=useState(0);
+  const [streak,setStreak]=useState(0);
+  const [bestStreak,setBestStreak]=useState(0);
+  const [results,setResults]=useState([]);
+  const [timer,setTimer]=useState(0);
+  const [combo,setCombo]=useState(false);
+  const timerRef=useRef(null);
+
+  const lcfg=curLevel?LEVELS_CFG[curLevel-1]:null;
+  const puzzle=queue[idx]||null;
+
+  useEffect(()=>{
+    if(screen!=="game"||sel!==null||!puzzle)return;
+    if(timer<=0){setSel(-1);setStreak(0);return;}
+    timerRef.current=setTimeout(()=>setTimer(t=>t-1),1000);
+    return()=>clearTimeout(timerRef.current);
+  },[timer,screen,sel,puzzle]);
+
+  function startLevel(lvl){
+    const pool=shuffle(ALL_PUZZLES.filter(p=>p.level===lvl)).slice(0,PER_LEVEL);
+    setCurLevel(lvl);setQueue(pool);setIdx(0);setScore(0);setStreak(0);setBestStreak(0);
+    setResults([]);setSel(null);setShowHint(false);setHintUsed(false);
+    setTimer(LEVELS_CFG[lvl-1].time);setScreen("game");
+  }
+
+  function handleSel(i){
+    if(sel!==null)return;
+    clearTimeout(timerRef.current);setSel(i);
+    const ok=i===puzzle.a;
+    if(ok){
+      const base=lcfg.pts;
+      const pen=hintUsed?Math.floor(base*.4):0;
+      const tb=Math.floor((timer/lcfg.time)*10);
+      setScore(s=>s+base-pen+tb);
+      const ns=streak+1;setStreak(ns);
+      if(ns>bestStreak)setBestStreak(ns);
+      if(ns>=2){setCombo(true);setTimeout(()=>setCombo(false),900);}
+      setResults(r=>[...r,"ok"]);
+    }else{setStreak(0);setResults(r=>[...r,"ko"]);}
+  }
+
+  function nextPuzzle(){
+    if(idx+1>=queue.length)finishLevel();
+    else{setIdx(i=>i+1);setSel(null);setShowHint(false);setHintUsed(false);setTimer(lcfg.time);}
+  }
+
+  function finishLevel(){
+    const c=results.filter(r=>r==="ok").length+(sel===puzzle?.a?1:0);
+    const s=stars(c,PER_LEVEL);
+    const np={...prog};
+    np[curLevel]={unlocked:true,stars:Math.max(s,prog[curLevel].stars),best:Math.max(score,prog[curLevel].best)};
+    if(s>=1&&curLevel<5)np[curLevel+1]={...np[curLevel+1],unlocked:true};
+    setProg(np);setTotalScore(ts=>ts+score);setScreen("level-end");
+  }
+
+  const correct=results.filter(r=>r==="ok").length;
+  const timerPct=lcfg?(timer/lcfg.time)*100:100;
+  const timerColor=timerPct>50?"var(--green)":timerPct>25?"var(--c3)":"var(--red)";
+  const totalPuzzles=ALL_PUZZLES.length;
+  const completedCount=Object.values(prog).reduce((a,v)=>a+(v.stars>0?PER_LEVEL:0),0);
+
+  return React.createElement("div",{className:"app"},
+    combo&&React.createElement("div",{className:"combo-fx"},`🔥 ${streak}× COMBO!`),
+
+    // LOGO
+    React.createElement("div",null,
+      React.createElement("div",{className:"logo"},"LOGIX"),
+      React.createElement("div",{className:"tagline"},"70 puzzle · 5 livelli · logica pura")
+    ),
+
+    // HOME
+    screen==="home"&&React.createElement(React.Fragment,null,
+      React.createElement("div",{className:"global-progress fade"},
+        React.createElement("div",{className:"gp-top"},
+          React.createElement("span",{className:"gp-label"},"Progressione globale"),
+          React.createElement("span",{className:"gp-val"},`${completedCount}/${totalPuzzles} puzzle`)
+        ),
+        React.createElement("div",{className:"gp-bar"},
+          React.createElement("div",{className:"gp-fill",style:{width:`${(completedCount/totalPuzzles)*100}%`}})
+        ),
+        React.createElement("div",{className:"gp-levels"},
+          LEVELS_CFG.map(l=>{
+            const p=prog[l.id];
+            const cls=p.stars>0?"done":p.unlocked?"active":"locked";
+            return React.createElement("div",{key:l.id,className:`gp-dot ${cls}`,style:{background:p.stars>0||p.unlocked?l.color:"var(--border)"}});
+          })
+        )
+      ),
+      React.createElement("div",{className:"top-row"},
+        React.createElement("span",{className:"section-label"},"Seleziona livello"),
+        React.createElement("span",{className:"total-score"},`⭐ ${totalScore} pt totali`)
+      ),
+      React.createElement("div",{className:"level-grid fade"},
+        LEVELS_CFG.map(l=>{
+          const p=prog[l.id];
+          const locked=!p.unlocked;
+          const done=p.stars>0;
+          return React.createElement("div",{
+            key:l.id,
+            className:`level-card ${locked?"locked-card":""} ${done?"completed":""}`,
+            style:{borderColor:done?"var(--green)":p.unlocked?l.color:"var(--border)"},
+            onClick:()=>!locked&&startLevel(l.id)
+          },
+            React.createElement("div",{className:"lc-icon"},l.icon),
+            React.createElement("div",{className:"lc-info"},
+              React.createElement("div",{className:"lc-name",style:{color:locked?"var(--muted)":l.color}},`Livello ${l.id} — ${l.name}`),
+              React.createElement("div",{className:"lc-desc"},l.desc),
+              React.createElement("div",{className:"lc-meta"},
+                React.createElement("span",{className:"lc-tag",style:{color:l.color,borderColor:l.color}},`⏱ ${l.time}s`),
+                React.createElement("span",{className:"lc-tag",style:{color:l.color,borderColor:l.color}},`+${l.pts}pt`)
+              )
+            ),
+            React.createElement("div",{className:"lc-right"},
+              done&&React.createElement(React.Fragment,null,
+                React.createElement("div",{className:"lc-score",style:{color:l.color}},`${p.best}pt`),
+                React.createElement("div",null,"⭐".repeat(p.stars)+"☆".repeat(3-p.stars))
+              ),
+              !done&&!locked&&React.createElement("div",{style:{fontSize:".65rem",color:"var(--muted)"}},"Pronto"),
+              locked&&React.createElement("div",{className:"lock-icon"},"🔒")
+            )
+          );
+        })
+      ),
+      React.createElement("div",{className:"footer"},"Completa ogni livello (min 1⭐) per sbloccare il successivo")
+    ),
+
+    // GAME
+    screen==="game"&&puzzle&&React.createElement(React.Fragment,null,
+      React.createElement("div",{className:"stats"},
+        React.createElement("div",{className:"stat"},React.createElement("span",{className:"sv",style:{color:lcfg.color}},score),React.createElement("span",{className:"sl"},"Punti")),
+        React.createElement("div",{className:"stat"},React.createElement("span",{className:"sv",style:{color:streak>1?"var(--c3)":"var(--c2)"}},streak>1?`🔥${streak}`:streak),React.createElement("span",{className:"sl"},"Serie")),
+        React.createElement("div",{className:"stat"},React.createElement("span",{className:"sv"},`${correct}/${results.length}`),React.createElement("span",{className:"sl"},"Corrette")),
+        React.createElement("div",{className:"stat"},React.createElement("span",{className:"sv",style:{color:timerColor}},timer),React.createElement("span",{className:"sl"},"Sec"))
+      ),
+      React.createElement("div",{className:"pdots"},
+        queue.map((_,i)=>{
+          let cls="pdot";
+          if(i<results.length)cls+=" "+results[i];
+          else if(i===idx)cls+=" cur";
+          return React.createElement("div",{key:i,className:cls});
+        })
+      ),
+      React.createElement("div",{className:"card"},
+        React.createElement("div",{className:"card-top-bar",style:{background:`linear-gradient(90deg,${lcfg.color},var(--c5))`}}),
+        React.createElement("div",{className:"tbar"},React.createElement("div",{className:"tfill",style:{width:`${timerPct}%`,background:timerColor}})),
+        React.createElement("div",{className:"pmeta"},
+          React.createElement("span",{className:"badge",style:{color:lcfg.color,borderColor:lcfg.color}},`${lcfg.icon} ${lcfg.name}`),
+          React.createElement("span",{className:"pcat"},puzzle.category),
+          React.createElement("span",{className:"pnum"},`${idx+1}/${queue.length}`)
+        ),
+        React.createElement("div",{className:"q"},puzzle.q),
+        showHint&&React.createElement("div",{className:"hint-box"},`💡 ${puzzle.hint}`),
+        React.createElement("div",{className:"opts"},
+          puzzle.opts.map((opt,i)=>{
+            let cls="opt";
+            if(sel!==null){if(i===puzzle.a)cls+=" ok";else if(i===sel)cls+=" ko";}
+            return React.createElement("button",{key:i,className:cls,disabled:sel!==null||timer===0,onClick:()=>handleSel(i)},
+              React.createElement("span",{className:"let"},String.fromCharCode(65+i)+". "),opt
+            );
+          })
+        ),
+        sel!==null&&React.createElement("div",{className:"expl"},
+          React.createElement("b",null,sel===-1?"⏰ Tempo! ":sel===puzzle.a?"✓ Corretto! ":"✗ Sbagliato. "),
+          puzzle.expl
+        ),
+        React.createElement("div",{className:"acts"},
+          sel===null&&!showHint&&timer>0&&React.createElement("button",{className:"btn btn-g",onClick:()=>{setShowHint(true);setHintUsed(true);}},"💡 Hint (-40%)"),
+          (sel!==null||timer===0)&&React.createElement("button",{className:"btn btn-p",onClick:nextPuzzle},idx+1>=queue.length?"Risultati →":"Prossimo →"),
+          sel===null&&timer>0&&React.createElement("button",{className:"btn btn-g",style:{flex:0,minWidth:40},onClick:nextPuzzle},"↻")
+        )
+      ),
+      React.createElement("button",{className:"btn btn-g",style:{width:"100%",maxWidth:520,fontSize:".62rem"},onClick:()=>{clearTimeout(timerRef.current);setScreen("home");}},"← Torna alla mappa")
+    ),
+
+    // LEVEL END
+    screen==="level-end"&&lcfg&&React.createElement("div",{className:"card fade",style:{maxWidth:520,width:"100%"}},
+      React.createElement("div",{className:"card-top-bar",style:{background:`linear-gradient(90deg,${lcfg.color},var(--c5))`}}),
+      React.createElement("div",{className:"lend"},
+        (()=>{
+          const c=results.filter(r=>r==="ok").length;
+          const s=stars(c,PER_LEVEL);
+          return React.createElement(React.Fragment,null,
+            React.createElement("div",{className:"lend-icon"},s===3?"🏆":s===2?"🎯":s===1?"👍":"🔄"),
+            React.createElement("div",{className:"lend-title",style:{color:lcfg.color}},s===3?"Perfetto!":s===2?"Ottimo!":s===1?"Completato!":"Riprova!"),
+            React.createElement("div",{className:"lend-sub"},`Livello ${curLevel} — ${lcfg.name}`),
+            React.createElement("div",{className:"stars-row"},"⭐".repeat(s)+"☆".repeat(3-s)),
+            React.createElement("div",{className:"lend-score",style:{color:lcfg.color}},`${score} pt`),
+            React.createElement("div",{className:"lend-grid"},
+              React.createElement("div",{className:"lend-stat"},React.createElement("div",{className:"lsv",style:{color:"var(--green)"}},`${c}/${PER_LEVEL}`),React.createElement("div",{className:"lsl"},"Corrette")),
+              React.createElement("div",{className:"lend-stat"},React.createElement("div",{className:"lsv",style:{color:"var(--c3)"}},bestStreak),React.createElement("div",{className:"lsl"},"Best streak")),
+              React.createElement("div",{className:"lend-stat"},React.createElement("div",{className:"lsv",style:{color:lcfg.color}},`${s}/3`),React.createElement("div",{className:"lsl"},"Stelle"))
+            ),
+            s>=1&&curLevel<5&&React.createElement("div",{className:"unlock-banner"},`🔓 Livello ${curLevel+1} sbloccato!`),
+            React.createElement("div",{className:"lend-acts"},
+              React.createElement("button",{className:"btn btn-p",onClick:()=>startLevel(curLevel)},"Rigioca"),
+              s>=1&&curLevel<5&&React.createElement("button",{className:"btn btn-p",style:{background:`linear-gradient(135deg,${lcfg.color},var(--c5))`,borderColor:lcfg.color},onClick:()=>startLevel(curLevel+1)},`Livello ${curLevel+1} →`),
+              React.createElement("button",{className:"btn btn-g",onClick:()=>setScreen("home")},"Mappa")
+            )
+          );
+        })()
+      )
+    ),
+
+    React.createElement("div",{className:"footer"},"LOGIX — 70 puzzle · gratis · nessuna app")
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
